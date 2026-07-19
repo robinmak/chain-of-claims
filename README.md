@@ -246,28 +246,27 @@ flowchart TD
   judged acceptable only ~46% of the time (κ ≈ 0.18) — the audit is a **diagnostic
   signal, not a hard gate**: it is scored by a *panel* of independent verifiers with
   reported inter-verifier agreement.
-- **(4b) Causal-warrant check.** For warrants asserting causation, a two-part check
-  runs (config-gated by `COC_CAUSAL_CHECK_MODE` = `off` / `structural` / `full`; see
-  `docs/spec-causal-warrant-checking.md`):
+- **(4b) Causal-warrant check.** For warrants asserting causation, a two-part check runs
+  (config-gated by `COC_CAUSAL_CHECK_MODE` = `off` / `structural` / `full`):
   - **Part B — structural extraction.** An LLM structured-output call recovers *every*
-    cause→effect pair the warrant asserts. This is multi-pair by construction and needs
-    no training data or domain transfer, so it **replaces** both the earlier regex
-    heuristic and the mooted DEPBERT-style fine-tuned tagger [Kabir, Jahin & Al Hasan,
-    2025] — a tagger both fails to transfer to financial text and reproduces the
-    one-cause–effect-pair-per-sentence limit that a general-domain benchmark such as
-    UniCausal [Tan et al., 2023] exhibits. It records *what causation is claimed*, not
-    whether it is true.
+    cause→effect pair the warrant asserts, returning each as a ⟨cause, effect⟩ span pair.
+    Because the extraction is generative it captures multiple linked causal steps in one
+    warrant (e.g. "rising demand drove revenue growth, which widened margins" yields two
+    pairs) and handles implicit links, not only those flagged by a connective. This step
+    records *what causation is claimed*, not whether it is true; a warrant with no
+    extractable pair fails the structural check.
   - **Part C — causal attribution.** In `full` mode, after grounding (Stage 6), each
     extracted pair is checked against the claim's grounded evidence: does the evidence
-    *state* the causal link (`attributed`), merely mention both relata (`co_occurrence
-    _only`), describe a purpose/concessive relation (`purpose_or_concessive`), or
-    contradict it (`contradicted`)? Confusing purpose/co-occurrence for causation is the
-    dominant real-world error class in FinCausal 2025's [Moreno-Sandoval et al.] error
-    analysis. This is a **grounding** question, never a substantive-truth judgement:
-    Corr2Cause [Jin et al., 2024] shows off-the-shelf LLMs infer causation from
-    correlation at near-random accuracy, so causal truth stays out of scope and out of
-    the enum. Attribution is skipped (`not_applicable`) when no sources are supplied or
-    the claim has no grounding.
+    *state* the causal link (`attributed`), merely mention both relata without connecting
+    them (`co_occurrence_only`), describe a purpose or concessive relation rather than a
+    cause (`purpose_or_concessive`), or assert a different/opposite link (`contradicted`)?
+    Mistaking co-occurrence or purpose for causation is the dominant real-world error class
+    in financial causal text [Moreno-Sandoval et al., 2025]. Crucially, this is a
+    **grounding** question — is the causation *stated in the evidence* — never a
+    substantive judgement of whether the causation is *true*: Corr2Cause [Jin et al., 2024]
+    shows off-the-shelf LLMs infer causation from correlation at near-random accuracy, so
+    causal truth is deliberately excluded from the verdict space. Attribution is reported
+    as `not_applicable` when no sources are supplied or the claim has no grounding.
 
   Both parts are **diagnostic and low-weighted**: the causal signal is surfaced in the
   per-claim audit and never enters the hallucination score.
@@ -433,8 +432,7 @@ end-to-end and asserts that the injected numerical error is caught.
 ## 8. Limitations
 
 - **Causal warrant checking** is a two-part check (Stage 4 / 4b), config-gated by
-  `COC_CAUSAL_CHECK_MODE` (`off` / `structural` / `full`; see
-  `docs/spec-causal-warrant-checking.md`). **Part B** replaces the earlier regex with an
+  `COC_CAUSAL_CHECK_MODE` (`off` / `structural` / `full`). **Part B** replaces the earlier regex with an
   LLM structured-output extractor that recovers *all* cause→effect pairs a warrant
   asserts — multi-pair by construction, no training data, no domain-transfer problem. It
   supersedes the v1 plan to fine-tune a DEPBERT-style tagger, which the evidence retired:

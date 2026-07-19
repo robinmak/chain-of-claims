@@ -189,7 +189,7 @@ flowchart TD
         C7["(7) Explainability = grounding coverage"]
         C8["(8) Type-routed fact-check<br/>formula reconstruction · comparison · entailment"]
         C9["(9) Citation status<br/>out-of-context · uncited-unsupported"]
-        C4c["(4c) Causal attribution<br/>Part C: link stated in evidence? (full mode)"]
+        C4c["(4b) Causal attribution<br/>Part C: link stated in evidence? (full mode)"]
         C5 --> C6 --> C7
         C6 --> C8 --> C9
         C6 --> C4c

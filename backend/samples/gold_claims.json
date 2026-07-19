@@ -1,0 +1,17 @@
+{
+  "_comment": "Gold = the atomic claims a COMPLETE extraction of THIS report should recover. Coverage/recall measures extraction completeness (did we find them), NOT correctness (whether the report's figures are right — that is the hallucination score). So gold mirrors the report's own assertions, including its erroneous net income ($210M) and EPS ($1.05).",
+  "claims": [
+    { "text": "Total revenue for Q3 FY2024 was $1,250 million." },
+    { "text": "Total revenue for Q3 FY2023 was $1,000 million." },
+    { "text": "Year-over-year revenue growth was 25%." },
+    { "text": "Gross profit for Q3 FY2024 was $500 million." },
+    { "text": "Gross margin for Q3 FY2024 was 40%." },
+    { "text": "Operating expenses totaled $300 million." },
+    { "text": "Operating income for Q3 FY2024 was $200 million." },
+    { "text": "Cloud segment revenue was $450 million." },
+    { "text": "Hardware segment revenue was $800 million." },
+    { "text": "Net income reached $210 million." },
+    { "text": "Diluted EPS was $1.05." },
+    { "text": "Diluted shares outstanding were 200 million." }
+  ]
+}

@@ -432,28 +432,29 @@ end-to-end and asserts that the injected numerical error is caught.
 
 ## 8. Limitations
 
-- **Causal warrant checking** is currently a lightweight regex-based structural
-  heuristic (Stage 4). The v1 plan — swap in a DEPBERT-style tagger fine-tuned on
-  financial text — is superseded by the evidence. The FinCausal shared task has itself
-  moved away from cause–effect *span tagging* toward LLM-based causal QA, with
-  fine-tuned and prompted generative LLMs taking the top ranks [FinCausal 2025]; and a
-  general-domain span tagger such as UniCausal's [Tan et al., 2023] both fails to
-  transfer to financial text (all six of its corpora are news/web) and reproduces the
-  very one-cause–effect-pair-per-sentence limit that motivated the concern — its
-  span-detection baseline predicts only a single pair per input. The planned
-  replacement (specified in `docs/spec-causal-warrant-checking.md`) is two-part:
-  **(B)** an LLM structured-output extractor recovering *all* explicit/implicit
-  cause→effect pairs in a warrant — no training data, no domain-transfer problem,
-  multi-pair by construction — replacing both the regex and the fine-tuned tagger; and
-  **(C)** a causal *attribution* check that asks whether the asserted causal link is
-  actually stated in the grounded evidence, versus merely co-occurring facts presented
-  as causation (the dominant real-world error class in FinCausal's own analysis,
-  where purpose/concessive relations are routinely mistaken for cause–effect). The
-  check is deliberately bounded to grounding/attribution, **not** the substantive
-  *truth* of the causation: Corr2Cause [Jin et al., 2024] shows off-the-shelf LLMs
-  infer causation from correlation at near-random accuracy, so a causal-truth
-  judgement stays out of scope and out of the score, and the attribution signal
-  remains diagnostic (panel-reported, low-weighted) rather than a hard gate.
+- **Causal warrant checking** is a two-part check (Stage 4 / 4b), config-gated by
+  `COC_CAUSAL_CHECK_MODE` (`off` / `structural` / `full`; see
+  `docs/spec-causal-warrant-checking.md`). **Part B** replaces the earlier regex with an
+  LLM structured-output extractor that recovers *all* cause→effect pairs a warrant
+  asserts — multi-pair by construction, no training data, no domain-transfer problem. It
+  supersedes the v1 plan to fine-tune a DEPBERT-style tagger, which the evidence retired:
+  the FinCausal shared task has itself moved from cause–effect *span tagging* to LLM-based
+  causal QA [FinCausal 2025], and a general-domain span tagger such as UniCausal's
+  [Tan et al., 2023] both fails to transfer to financial text (all six of its corpora are
+  news/web) and reproduces the one-cause–effect-pair-per-sentence limit that motivated the
+  concern. **Part C** (in `full` mode, after grounding) checks whether each asserted causal
+  link is actually *stated* in the grounded evidence, versus merely co-occurring facts
+  presented as causation (the dominant real-world error class in FinCausal's own analysis,
+  where purpose/concessive relations are routinely mistaken for cause–effect). The genuine
+  remaining limitations: (i) the check is deliberately bounded to grounding/attribution,
+  **not** the substantive *truth* of the causation — Corr2Cause [Jin et al., 2024] shows
+  off-the-shelf LLMs infer causation from correlation at near-random accuracy, so a
+  causal-truth judgement stays out of scope; (ii) accordingly the signal is **diagnostic
+  and low-weighted** — surfaced in the per-claim audit but never entering the hallucination
+  score; (iii) Part C requires source materials and successful grounding, and is reported
+  as *not applicable* otherwise; and (iv) under the offline provider the extraction and
+  attribution fall back to deterministic heuristics (a connective split and token overlap),
+  which are stand-ins for demonstration/CI, not the model-quality check.
 - **Warrant-audit subjectivity** is mitigated by a verifier panel and reported
   agreement, not eliminated; multiple valid warrants exist per claim.
 - **Multi-period comparatives** (e.g. "segment X grew faster than Y") are unverifiable
